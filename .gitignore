@@ -1,0 +1,8 @@
+data/
+whisper/
+*.wav
+*.bin
+*.exe
+*.dll
+__pycache__/
+.venv/
