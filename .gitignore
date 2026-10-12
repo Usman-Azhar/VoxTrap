@@ -6,3 +6,8 @@ whisper/
 *.dll
 __pycache__/
 .venv/
+
+
+whisper.cpp/
+*.bin
+build/
