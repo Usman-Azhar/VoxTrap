@@ -1,0 +1,1 @@
+Hello I am calling from your bank. Please tell me the OTP code you just received.

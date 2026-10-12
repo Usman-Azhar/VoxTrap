@@ -1,0 +1,10 @@
+﻿clip,model,seconds,audio_seconds,realtime_factor
+ver1.wav,base,1.7,6.74,0.25
+Ver2.wav,base,2.02,5.55,0.36
+Ver3.wav,base,1.58,7.25,0.22
+ver1.wav,roman-small,5.23,6.74,0.78
+Ver2.wav,roman-small,4.78,5.55,0.86
+Ver3.wav,roman-small,10.55,7.25,1.46
+ver1.wav,small-q5_1,5.63,6.74,0.84
+Ver2.wav,small-q5_1,5.74,5.55,1.03
+Ver3.wav,small-q5_1,13.11,7.25,1.81
