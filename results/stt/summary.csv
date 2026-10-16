@@ -1,0 +1,4 @@
+﻿model,clips,judged,ok,partial,missed,false_alarm,avg_rtf,avg_wer
+base,3,0,0,0,0,0,0.28,
+roman-small,3,0,0,0,0,0,1.03,
+small-q5_1,3,0,0,0,0,0,1.23,
