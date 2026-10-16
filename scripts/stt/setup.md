@@ -16,10 +16,13 @@ Download them using the steps below.
 
 Put every model file in the same folder as `whisper-cli.exe`.
 
+| Name | File | Language flag | Download |
+|---|---|---|---|
 | base | `ggml-base.bin` | `-l ur` | https://huggingface.co/ggerganov/whisper.cpp |
-| small-q5_1 | `ggml-small-q5_1.bin` (~181 MB) | `-l ur` | https://huggingface.co/ggerganov/whisper.cpp |
+| small-q5_1 | `ggml-small-q5_1.bin` (~181 MB) | `-l ur` | same page |
+| medium | `ggml-medium.bin` (~1.5 GB) | `-l ur` | same page |
+| large-v3-turbo | `ggml-large-v3-turbo.bin` (~1.6 GB) | `-l ur` | same page |
 | roman-small | `ggml-model-q4_0.bin` (~139 MB) | `-l auto` | https://huggingface.co/femustafa/voicedictation-models |
-| medium-urdu (optional, 1.4 GB) | `ggml-medium-urdu.bin` | `-l ur` | https://huggingface.co/CodeWithAhsan/whisper-medium-urdu-ggml |
 
 Notes:
 - Use the multilingual models, not the `.en` ones (English only).
@@ -57,19 +60,14 @@ Transcripts go to `results/stt/outputs/<model>/<clip>.txt` and timings to
 
 ## 6. Score the results
 
-1. Fill in `results/stt/refs.csv` with what is actually said in each clip.
-   Use the `reference_roman` column for the Roman Urdu model and `reference_urdu`
-   for the Urdu-script models. A row can have just one of them.
-2. Optionally edit `results/stt/keywords.txt`.
-3. Run:
-   ```powershell
-   pip install -r scripts/stt/requirements.txt
-   python scripts/stt/compare_wer.py
-   ```
-   This prints a table and saves `results/stt/summary.csv`.
+1. Edit `results/stt/refs.csv`: one row per clip. `expected` is SCAM or SAFE.
+   `reference` (the exact words said) is optional and gives the WER.
+2. From the repo root run: `python scripts/stt/score_outputs.py`
+3. It prints a table and saves `results/stt/rules_scores.csv` and `summary.csv`.
 
-A realtime factor (RTF) near or above 1.0 on a laptop means the model will be
-too slow for real-time use on a phone.
+Verdicts: OK, PARTIAL (scam clip scored SUSPICIOUS), MISSED (scam clip scored SAFE),
+FALSE ALARM (normal clip scored SUSPICIOUS or SCAM).
+A realtime factor near or above 1.0 means the model is too slow for real time.
 
 ## 7. What to commit
 

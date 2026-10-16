@@ -13,7 +13,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RULES_FILE = ROOT / "rules" / "rules.json"
-WHISPER_DIR = ROOT / "whisper"
 AUDIO_DIR = ROOT / "data" / "audio"
 RESULTS_FILE = ROOT / "results" / "whisper_test.csv"
 
@@ -61,16 +60,22 @@ def score_text(text, rules, token_map):
     return total, level, hits
 
 # ---------------- whisper ----------------
-def find_exe():
+def locate_whisper(custom):
+    """Find whisper-cli anywhere inside the repo (or inside --whisper-dir). Works with or without a Release folder."""
+    base = Path(custom) if custom else ROOT
     for name in ("whisper-cli.exe", "whisper-cli"):
-        p = next(WHISPER_DIR.rglob(name), None)
-        if p: return p
-    sys.exit(f"whisper-cli not found under {WHISPER_DIR}. Paste the whole Release folder into whisper/.")
+        for p in base.rglob(name):
+            if ".git" not in p.parts:
+                return p
+    sys.exit(f"whisper-cli.exe not found under {base}.\n"
+             f"Put your Whisper folder inside the repo, or run with:  --whisper-dir \"C:\\path\\to\\your\\whisper folder\"")
 
-def find_models(choice):
-    found = {p.stem.replace("ggml-", ""): p for p in WHISPER_DIR.rglob("ggml-*.bin")}
+def find_models(choice, folder):
+    found = {p.stem.replace("ggml-", ""): p for p in folder.rglob("ggml-*.bin")}
     if not found:
-        sys.exit(f"No ggml-*.bin models found under {WHISPER_DIR}.")
+        found = {p.stem.replace("ggml-", ""): p for p in ROOT.rglob("ggml-*.bin") if ".git" not in p.parts}
+    if not found:
+        sys.exit(f"No ggml-*.bin model files found near {folder}.")
     if choice == "all":
         order = ["tiny", "base", "small", "medium", "large-v3-turbo"]
         return [(n, found[n]) for n in order if n in found] + [(n, p) for n, p in found.items() if n not in order]
@@ -89,8 +94,10 @@ def ensure_16k_mono(wav):
     if not ff:
         sys.exit("Audio must be 16 kHz mono WAV and ffmpeg was not found. Install it (winget install ffmpeg) and retry.")
     out = wav.with_name(wav.stem + "_16k.wav")
-    subprocess.run([ff, "-y", "-i", str(wav), "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", str(out)],
-                   check=True, capture_output=True)
+    res = subprocess.run([ff, "-y", "-i", str(wav), "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", str(out)],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if res.returncode != 0:
+        sys.exit("ffmpeg could not convert the audio:\n" + res.stderr[-600:])
     return out
 
 def run_whisper(exe, model_name, model_path, wav, prompt):
@@ -135,6 +142,7 @@ def main():
     ap.add_argument("--text", help="score an existing transcript .txt instead of running Whisper")
     ap.add_argument("--model", default="medium", help="tiny | base | small | medium | large-v3-turbo | all")
     ap.add_argument("--prompt", help="optional vocabulary hint for Whisper")
+    ap.add_argument("--whisper-dir", help="folder containing whisper-cli.exe and the models (only if auto-detect fails)")
     a = ap.parse_args()
     if not a.audio and not a.text:
         ap.error("give a WAV file or --text file.txt")
@@ -147,9 +155,14 @@ def main():
         save_row(a.text, "(text file)", None, total, level, hits, text)
         return
 
-    wav = ensure_16k_mono(Path(a.audio))
-    exe = find_exe()
-    for name, path in find_models(a.model):
+    audio = Path(a.audio)
+    if not audio.exists():
+        here = sorted(p.name for p in AUDIO_DIR.glob("*")) if AUDIO_DIR.exists() else []
+        sys.exit(f"Audio file not found: {audio.resolve()}\nFiles in {AUDIO_DIR}: {here if here else 'folder is empty or missing'}")
+    wav = ensure_16k_mono(audio)
+    exe = locate_whisper(a.whisper_dir)
+    print(f"Using Whisper: {exe}")
+    for name, path in find_models(a.model, exe.parent):
         text, secs = run_whisper(exe, name, path, wav, a.prompt)
         total, level, hits = score_text(text, rules, token_map)
         show(f"{Path(a.audio).name} | model: {name}", text, secs, total, level, hits)

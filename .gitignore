@@ -4,10 +4,8 @@ whisper/
 *.bin
 *.exe
 *.dll
+*.zip
 __pycache__/
 .venv/
-
-
 whisper.cpp/
-*.bin
 build/

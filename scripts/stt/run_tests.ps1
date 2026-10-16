@@ -24,11 +24,13 @@ if (-not $OutDir) {
 # Models to test. Name is used as the output folder name.
 # A name containing "roman" is scored against the Roman Urdu reference by compare_wer.py.
 $models = @(
-    @{ Name = "base";        File = "ggml-base.bin";       Lang = "ur"   },
-    @{ Name = "roman-small"; File = "ggml-model-q4_0.bin"; Lang = "auto" },
-    @{ Name = "small-q5_1";  File = "ggml-small-q5_1.bin"; Lang = "ur"   }
+    @{ Name = "base";           File = "ggml-base.bin";           Lang = "ur"   },
+    @{ Name = "roman-small";    File = "ggml-model-q4_0.bin";     Lang = "auto" },
+    @{ Name = "small-q5_1";     File = "ggml-small-q5_1.bin";     Lang = "ur"   },
+    @{ Name = "medium";         File = "ggml-medium.bin";         Lang = "ur"   },
+    @{ Name = "large-v3-turbo"; File = "ggml-large-v3-turbo.bin"; Lang = "ur"   }
     # @{ Name = "medium-urdu"; File = "ggml-medium-urdu.bin"; Lang = "ur" }
-)
+) 
 
 $cli = Join-Path $WhisperDir "whisper-cli.exe"
 if (-not (Test-Path $cli)) { Write-Error "whisper-cli.exe not found in $WhisperDir"; exit 1 }
