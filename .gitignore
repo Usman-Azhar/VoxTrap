@@ -1,11 +1,1 @@
-data/
-whisper/
-*.wav
-*.bin
-*.exe
-*.dll
-*.zip
-__pycache__/
-.venv/
-whisper.cpp/
-build/
+.idea/
